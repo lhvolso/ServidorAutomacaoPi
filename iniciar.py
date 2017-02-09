@@ -9,8 +9,9 @@ cors = CORS(app)
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
 
-@app.route("/")
-def hello():
+@app.route("/", methods=["GET","POST"])
+@cross_origin()
+def padrao():
     return '<h1>Seu servidor foi iniciado corretamente</h1>'
 
 @app.route("/lerpinos", methods=["GET","POST"])
@@ -18,7 +19,7 @@ def hello():
 def lerpinos():
     json = request.json
     pinoretorno = int(json.get('pinoretorno'))
-    GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_DOWN)
+    GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     ligado = GPIO.input(pinoretorno)
     return '{"ligado":"'+str(ligado)+'"}'
 
@@ -30,30 +31,29 @@ def controle():
     pinoretorno = int(json.get('pinoretorno'))
     status = int(json.get('status'))
     GPIO.setup(pinoacende, GPIO.OUT)
-    GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_DOWN) # Seta o pino para ENTRADA com sinal LOW
-    sucesso = 1
-    if status == 1:
-        GPIO.output(pinoacende, GPIO.HIGH)
-        timeout = time.time() + 1
-        while GPIO.input(pinoretorno) == 0:
-            time.sleep(0.25)
-            app.logger.debug('while')
-            if time.time() > timeout:
-                sucesso = 0
-                break
+    GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     
-    if status == 0:
-        GPIO.output(pinoacende, GPIO.LOW)
-        timeout = time.time() + 1
-        while GPIO.input(pinoretorno) == 1:
-            time.sleep(0.25)
-            app.logger.debug('while')
-            if time.time() > timeout:
-                sucesso = 0
-                break
+    statuspinoacende = GPIO.input(pinoacende)
+    statuspinoretorno = GPIO.input(pinoretorno)
+    
+    #app.logger.debug('Pino acende: ' + str(statuspinoacende))
+    #app.logger.debug('Pino retorno: ' + str(statuspinoretorno))
+    
+    sucesso = 1
+
+    GPIO.output(pinoacende, not statuspinoacende)
+    while GPIO.input(pinoretorno) == (not statuspinoretorno):
+        time.sleep(0.25)
+        #app.logger.debug('while')
+        if time.time() > timeout:
+            sucesso = 0
+            break
+
+    time.sleep(0.25)
+    statuspinoretorno = GPIO.input(pinoretorno);
 
     if sucesso:
-        return '{"sucesso":"true"}'
+        return '{"sucesso":"true", "ligado":'+str(statuspinoretorno)+'}'
     else:
         return '{"sucesso":"false"}'
 
