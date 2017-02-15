@@ -1,14 +1,1 @@
-{
-	"controle": {
-		"0": {
-			"desligar": "10:00",
-			"ligar": "8:00",
-			"pinoacende": "11"
-		},
-		"1": {
-			"desligar": "6:00",
-			"ligar": "",
-			"pinoacende": "13"
-		}
-	}
-}
+{"0": {"desligar": "15:28", "ligar": "15:26", "pinoacende": "11", "pinoretorno": "7"}}
