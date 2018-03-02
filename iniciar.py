@@ -17,9 +17,14 @@ def padrao():
 @cross_origin()
 def lerpinos():
     json = request.json
+    pinoacende = int(json.get('pinoacende'))
     pinoretorno = int(json.get('pinoretorno'))
-    GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_UP)
-    ligado = GPIO.input(pinoretorno)
+    if pinoretorno != 0:
+        GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+        ligado = GPIO.input(pinoretorno)
+    else:
+        GPIO.setup(pinoacende, GPIO.OUT)
+        ligado = GPIO.input(pinoacende)
     return '{"ligado":"'+str(ligado)+'"}'
 
 @app.route("/controle", methods=["GET","POST"])
@@ -29,22 +34,29 @@ def controle():
     pinoacende = int(json.get('pinoacende'))
     pinoretorno = int(json.get('pinoretorno'))
     status = int(json.get('status'))
+    
     GPIO.setup(pinoacende, GPIO.OUT)
-    GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_UP)
     statuspinoacende = GPIO.input(pinoacende)
-    statuspinoretorno = GPIO.input(pinoretorno)
-    #app.logger.debug('Pino acende: ' + str(statuspinoacende))
-    #app.logger.debug('Pino retorno: ' + str(statuspinoretorno))
+
+    if pinoretorno == 0:
+        statuspinoretorno = GPIO.input(pinoacende)
+    else:
+        GPIO.setup(pinoretorno, GPIO.IN, pull_up_down = GPIO.PUD_UP)
+        statuspinoretorno = GPIO.input(pinoretorno)
+
     sucesso = 1
     GPIO.output(pinoacende, not statuspinoacende)
+    if pinoretorno == 0:
+        pinoretorno = pinoacende
+
+    timeout = (time.time() + 2)
     while GPIO.input(pinoretorno) == (not statuspinoretorno):
         time.sleep(0.25)
         if time.time() > timeout:
             sucesso = 0
             break
-
-    time.sleep(0.25)
-    statuspinoretorno = GPIO.input(pinoretorno);
+        time.sleep(0.25)
+        statuspinoretorno = GPIO.input(pinoretorno);
 
     if sucesso:
         return '{"sucesso":"true", "ligado":'+str(statuspinoretorno)+'}'
@@ -81,8 +93,9 @@ def deletar():
     indice = dadosJson.get('indice')
     with open("/home/pi/ServidorAutomacaoPi/cron.json","r") as d:
         dados = json.load(d)
-
-    del dados[indice]
+    
+    if dados:
+        del dados[indice]
 
     with open("/home/pi/ServidorAutomacaoPi/cron.json","w") as d:
         d.write(json.dumps(dados))
@@ -91,4 +104,5 @@ def deletar():
 
 if __name__ == "__main__":
     # logging.basicConfig(filename='error.log',level=logging.DEBUG)
-    app.run(host='0.0.0.0', port=80, debug=True)
+    # app.run(host='0.0.0.0', port=5000, debug=True, ssl_context=('cert.pem', 'key.pem'))
+    app.run(host='0.0.0.0', port=5000, debug=True, ssl_context='adhoc')
