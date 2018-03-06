@@ -1,7 +1,0 @@
-WARNING:werkzeug: * Debugger is active!
-INFO:werkzeug: * Debugger PIN: 244-146-385
-INFO:werkzeug:10.1.1.116 - - [16/Feb/2018 23:14:47] "OPTIONS / HTTP/1.1" 200 -
-INFO:werkzeug:10.1.1.116 - - [16/Feb/2018 23:14:47] "POST / HTTP/1.1" 200 -
-INFO:werkzeug:10.1.1.116 - - [16/Feb/2018 23:14:58] "OPTIONS / HTTP/1.1" 200 -
-INFO:werkzeug:10.1.1.116 - - [16/Feb/2018 23:14:58] "POST / HTTP/1.1" 200 -
-INFO:werkzeug: * Detected change in '/home/pi/ServidorAutomacaoPi/iniciar.py', reloading
